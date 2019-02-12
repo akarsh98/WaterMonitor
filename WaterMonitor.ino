@@ -14,17 +14,16 @@
  **********************************************************************/
 
 #include <SPI.h>
-#include <SD.h>
 #include <Wire.h>
 #include "GravitySensorHub.h"
-#include "GravityRtc.h"
 #include "OneWire.h"
-#include "SdService.h"
 #include "Debug.h"
 #include <SoftwareSerial.h>
+#include "ssd1306.h"
 
-String myAPIkey = "key"; 
-SoftwareSerial ESP8266(2, 3); // Rx,  Tx
+
+String myAPIkey = "AV1MK2DTKXM0STAU"; 
+SoftwareSerial ESP8266(10, 11); // Rx,  Tx
 
 long writingTimer = 17; 
 long startTime = 0;
@@ -36,39 +35,38 @@ unsigned char check_connection=0;
 unsigned char times_check=0;
 boolean error;
 
-// clock module
-GravityRtc rtc;
-
-// sensor monitor
 GravitySensorHub sensorHub;
-//SdService sdService = SdService(sensorHub.sensors);
+
 void setup() {
-	Serial.begin(9600);
-	ESP8266.begin(9600); 
+  Serial.begin(9600);
+  ESP8266.begin(9600);
+  ssd1306_128x64_i2c_init();
+  ssd1306_fillScreen(0x00);
+  ssd1306_setFixedFont(ssd1306xled_font6x8);
   startTime = millis(); 
   ESP8266.println("AT+RST");
   delay(2000);
-  Serial.println("Connecting to Wifi");
-   while(check_connection==0)
+  //Serial.println("Connecting to Wifi");
+  while(check_connection==0)
   {
-    Serial.print(".");
-  ESP8266.print("AT+CWJAP=\"ssid\",\"pass\"\r\n");
+    //Serial.print(".");
+  ESP8266.print("AT+CWJAP=\"Kingen1\",\"sundsvall24\"\r\n");
   ESP8266.setTimeout(5000);
  if(ESP8266.find("WIFI CONNECTED\r\n")==1)
  {
- Serial.println("WIFI CONNECTED");
+ //Serial.println("WIFI CONNECTED");
  break;
  }
  times_check++;
  if(times_check>3) 
  {
   times_check=0;
-   Serial.println("Trying to Reconnect..");
+   //Serial.println("Trying to Reconnect..");
   }
   }
-	//rtc.setup();
-	sensorHub.setup();
-	//sdService.setup();
+  //rtc.setup();
+  sensorHub.setup();
+  //sdService.setup();
 
 }
 
@@ -87,20 +85,58 @@ void setup() {
 unsigned long updateTime = 0;
 
 void loop() {
-	//rtc.update();
-	sensorHub.update();
-	//sdService.update();
-
+  //rtc.update();
+  sensorHub.update();
+  char phab[6],tempa[6],oxygen[6];
+  float oxysat,airsat;
+  dtostrf(sensorHub.getValueBySensorNumber(0),3,2,phab);
+  dtostrf(sensorHub.getValueBySensorNumber(1),3,2,tempa);
+  dtostrf(sensorHub.getValueBySensorNumber(2),3,2,oxygen);
+  
+  ssd1306_printFixedN (0,  30, "pH:", STYLE_NORMAL,FONT_SIZE_2X);
+  ssd1306_printFixedN (60,  30, phab , STYLE_NORMAL,FONT_SIZE_2X);
+  
+  ssd1306_printFixedN (0,  0, "Temp:", STYLE_NORMAL,FONT_SIZE_2X);
+  ssd1306_printFixedN (60, 0, tempa , STYLE_NORMAL,FONT_SIZE_2X);
+  
+  ssd1306_printFixedN (0,  50, "Oxy:", STYLE_NORMAL,FONT_SIZE_2X);
+  ssd1306_printFixedN (60,  50,oxygen, STYLE_NORMAL,FONT_SIZE_2X);
+ 
+  if(sensorHub.getValueBySensorNumber(1)<=6.5)
+  {
+    oxysat=sensorHub.getValueBySensorNumber(2)/0.59978;
+    }
+  else if(sensorHub.getValueBySensorNumber(1)>6.5 && sensorHub.getValueBySensorNumber(1)<=7.5)
+  {
+    oxysat=sensorHub.getValueBySensorNumber(2)/0.58484;
+    }
+  else if(sensorHub.getValueBySensorNumber(1)>7.5 && sensorHub.getValueBySensorNumber(1)<=8.5)
+  {
+    oxysat=sensorHub.getValueBySensorNumber(2)/0.57049;
+    }
+  else if(sensorHub.getValueBySensorNumber(1)>8.5 && sensorHub.getValueBySensorNumber(1)<=9.5)
+  {
+    oxysat=sensorHub.getValueBySensorNumber(2)/0.55672;
+    }
+  else if(sensorHub.getValueBySensorNumber(1)>9.5 && sensorHub.getValueBySensorNumber(1)<=10.5)
+  {
+    oxysat=sensorHub.getValueBySensorNumber(2)/0.54348;
+    }
+  else
+  {
+    oxysat=sensorHub.getValueBySensorNumber(2)/0.39475;
+    }
+  airsat=oxysat*4.78469;
   waitTime = millis()-startTime;   
   if (waitTime > (writingTimer*1000)) 
   {
-    writeThingSpeak();
+    writeThingSpeak(oxysat,airsat);
     startTime = millis();   
   }
 
 }
 
-void writeThingSpeak(void)
+void writeThingSpeak(float oxysat, float airsat)
 {
   startThingSpeakCmd();
   String getStr = "GET /update?api_key=";
@@ -109,6 +145,12 @@ void writeThingSpeak(void)
   getStr += String(sensorHub.getValueBySensorNumber(0));
   getStr +="&field2=";
   getStr += String(sensorHub.getValueBySensorNumber(1));
+  getStr +="&field3=";
+  getStr += String(sensorHub.getValueBySensorNumber(2));
+  getStr +="&field4=";
+  getStr += String(oxysat);
+  getStr +="&field5=";
+  getStr += String(airsat);
   getStr += "\r\n\r\n";
   GetThingspeakcmd(getStr); 
 }
@@ -120,12 +162,12 @@ void startThingSpeakCmd(void)
   cmd += "184.106.153.149";                      // api.thingspeak.com IP address
   cmd += "\",80";
   ESP8266.println(cmd);
-  Serial.print("Start Commands: ");
-  Serial.println(cmd);
+  //Serial.print("Start Commands: ");
+  //Serial.println(cmd);
 
   if(ESP8266.find("Error"))
   {
-    Serial.println("AT+CIPSTART error");
+    //Serial.println("AT+CIPSTART error");
     return;
   }
 }
@@ -135,12 +177,12 @@ String GetThingspeakcmd(String getStr)
   String cmd = "AT+CIPSEND=";
   cmd += String(getStr.length());
   ESP8266.println(cmd);
-  Serial.println(cmd);
+  //Serial.println(cmd);
 
   if(ESP8266.find(">"))
   {
     ESP8266.print(getStr);
-    Serial.println(getStr);
+    //Serial.println(getStr);
     delay(500);
     String messageBody = "";
     while (ESP8266.available()) 
@@ -151,13 +193,13 @@ String GetThingspeakcmd(String getStr)
         messageBody = ESP8266.readStringUntil('\n');
       }
     }
-    Serial.print("MessageBody received: ");
-    Serial.println(messageBody);
+    //Serial.print("MessageBody received: ");
+    //Serial.println(messageBody);
     return messageBody;
   }
   else
   {
     ESP8266.println("AT+CIPCLOSE");     
-    Serial.println("AT+CIPCLOSE"); 
+    //Serial.println("AT+CIPCLOSE"); 
   } 
 }

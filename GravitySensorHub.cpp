@@ -27,8 +27,6 @@
 // Parameters: 0 ph sensor
 // Parameters: 1 temperature sensor
 // Parameters: 2 Dissolved oxygen sensor
-// Parameters: 3 Conductivity sensor
-// Parameters: 4 Redox potential sensor
 //********************************************************************************************
 
 GravitySensorHub::GravitySensorHub()
@@ -97,8 +95,6 @@ void GravitySensorHub::update()
 // Parameters: 0 ph sensor
 // Parameters: 1 temperature sensor
 // Parameters: 2 Dissolved oxygen sensor
-// Parameters: 3 Conductivity sensor
-// Parameters: 4 Redox potential sensor
 // Return Value: Returns the acquired sensor data
 //********************************************************************************************
 double GravitySensorHub::getValueBySensorNumber(int num)
