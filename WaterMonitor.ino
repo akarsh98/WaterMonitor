@@ -110,11 +110,15 @@ void loop() {
   {
     oxysat=sensorHub.getValueBySensorNumber(2)/0.58484;
     }
-  else if(sensorHub.getValueBySensorNumber(1)>7.5 && sensorHub.getValueBySensorNumber(1)<=8.5)
+  else if(sensorHub.getValueBySensorNumber(1)>7.5 && sensorHub.getValueBySensorNumber(1)<=8.25)
   {
     oxysat=sensorHub.getValueBySensorNumber(2)/0.57049;
     }
-  else if(sensorHub.getValueBySensorNumber(1)>8.5 && sensorHub.getValueBySensorNumber(1)<=9.5)
+  else if(sensorHub.getValueBySensorNumber(1)>8.25 && sensorHub.getValueBySensorNumber(1)<=8.75)
+  {
+    oxysat=sensorHub.getValueBySensorNumber(2)/0.56353;
+    }
+  else if(sensorHub.getValueBySensorNumber(1)>8.75 && sensorHub.getValueBySensorNumber(1)<=9.5)
   {
     oxysat=sensorHub.getValueBySensorNumber(2)/0.55672;
     }
