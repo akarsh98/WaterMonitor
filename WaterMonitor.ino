@@ -88,10 +88,11 @@ void loop() {
   //rtc.update();
   sensorHub.update();
   char phab[6],tempa[6],oxygen[6];
-  float oxysat,airsat;
+  float oxysat,airsat,caloxy;
+  caloxy=sensorHub.getValueBySensorNumber(2)+3;
   dtostrf(sensorHub.getValueBySensorNumber(0),3,2,phab);
   dtostrf(sensorHub.getValueBySensorNumber(1),3,2,tempa);
-  dtostrf(sensorHub.getValueBySensorNumber(2),3,2,oxygen);
+  dtostrf(caloxy,3,2,oxygen);
   
   ssd1306_printFixedN (0,  30, "pH:", STYLE_NORMAL,FONT_SIZE_2X);
   ssd1306_printFixedN (60,  30, phab , STYLE_NORMAL,FONT_SIZE_2X);
@@ -104,33 +105,35 @@ void loop() {
  
   if(sensorHub.getValueBySensorNumber(1)<=6.5)
   {
-    oxysat=sensorHub.getValueBySensorNumber(2)/0.59978;
+    oxysat=caloxy/0.59978;
     }
   else if(sensorHub.getValueBySensorNumber(1)>6.5 && sensorHub.getValueBySensorNumber(1)<=7.5)
   {
-    oxysat=sensorHub.getValueBySensorNumber(2)/0.58484;
+    oxysat=caloxy/0.58484;
     }
   else if(sensorHub.getValueBySensorNumber(1)>7.5 && sensorHub.getValueBySensorNumber(1)<=8.25)
   {
-    oxysat=sensorHub.getValueBySensorNumber(2)/0.57049;
+    oxysat=caloxy/0.57049;
     }
   else if(sensorHub.getValueBySensorNumber(1)>8.25 && sensorHub.getValueBySensorNumber(1)<=8.75)
   {
-    oxysat=sensorHub.getValueBySensorNumber(2)/0.56353;
+    oxysat=caloxy/0.56353;
     }
   else if(sensorHub.getValueBySensorNumber(1)>8.75 && sensorHub.getValueBySensorNumber(1)<=9.5)
   {
-    oxysat=sensorHub.getValueBySensorNumber(2)/0.55672;
+    oxysat=caloxy/0.55672;
     }
   else if(sensorHub.getValueBySensorNumber(1)>9.5 && sensorHub.getValueBySensorNumber(1)<=10.5)
   {
-    oxysat=sensorHub.getValueBySensorNumber(2)/0.54348;
+    oxysat=caloxy/0.54348;
     }
   else
   {
-    oxysat=sensorHub.getValueBySensorNumber(2)/0.39475;
+    oxysat=caloxy/0.48455;
     }
   airsat=oxysat*4.78469;
+  if(airsat>100)
+  {airsat=100;}
   waitTime = millis()-startTime;   
   if (waitTime > (writingTimer*1000)) 
   {
