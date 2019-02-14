@@ -89,7 +89,7 @@ void loop() {
   sensorHub.update();
   char phab[6],tempa[6],oxygen[6];
   float oxysat,airsat,caloxy;
-  caloxy=sensorHub.getValueBySensorNumber(2)+3;
+  caloxy=sensorHub.getValueBySensorNumber(2)+4.2;
   dtostrf(sensorHub.getValueBySensorNumber(0),3,2,phab);
   dtostrf(sensorHub.getValueBySensorNumber(1),3,2,tempa);
   dtostrf(caloxy,3,2,oxygen);
@@ -132,8 +132,6 @@ void loop() {
     oxysat=caloxy/0.48455;
     }
   airsat=oxysat*4.78469;
-  if(airsat>100)
-  {airsat=100;}
   waitTime = millis()-startTime;   
   if (waitTime > (writingTimer*1000)) 
   {
@@ -153,7 +151,7 @@ void writeThingSpeak(float oxysat, float airsat)
   getStr +="&field2=";
   getStr += String(sensorHub.getValueBySensorNumber(1));
   getStr +="&field3=";
-  getStr += String(sensorHub.getValueBySensorNumber(2));
+  getStr += String(sensorHub.getValueBySensorNumber(2)+4.2);
   getStr +="&field4=";
   getStr += String(oxysat);
   getStr +="&field5=";
