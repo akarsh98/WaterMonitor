@@ -20,6 +20,7 @@
 #include "Debug.h"
 #include <SoftwareSerial.h>
 #include "ssd1306.h"
+#include <avr/wdt.h>
 
 
 String myAPIkey = "AV1MK2DTKXM0STAU"; 
@@ -87,6 +88,7 @@ unsigned long updateTime = 0;
 
 void loop() {
   //rtc.update();
+  if(timesrun >= 5){reboot();}
   timesrun++;
   sensorHub.update();
   char phab[6],tempa[6],oxygen[6];
@@ -211,4 +213,10 @@ String GetThingspeakcmd(String getStr)
     ESP8266.println("AT+CIPCLOSE");     
     //Serial.println("AT+CIPCLOSE"); 
   } 
+}
+
+void reboot() {
+  wdt_disable();
+  wdt_enable(WDTO_15MS);
+  while (1) {}
 }
