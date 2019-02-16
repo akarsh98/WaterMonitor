@@ -28,6 +28,7 @@ SoftwareSerial ESP8266(10, 11); // Rx,  Tx
 long writingTimer = 17; 
 long startTime = 0;
 long waitTime = 0;
+int timesrun = 0;
 
 boolean relay1_st = false; 
 boolean relay2_st = false; 
@@ -86,6 +87,7 @@ unsigned long updateTime = 0;
 
 void loop() {
   //rtc.update();
+  timesrun++;
   sensorHub.update();
   char phab[6],tempa[6],oxygen[6];
   float oxysat,airsat,caloxy;
@@ -135,13 +137,13 @@ void loop() {
   waitTime = millis()-startTime;   
   if (waitTime > (writingTimer*1000)) 
   {
-    writeThingSpeak(oxysat,airsat);
+    writeThingSpeak(oxysat,airsat,timesrun);
     startTime = millis();   
   }
 
 }
 
-void writeThingSpeak(float oxysat, float airsat)
+void writeThingSpeak(float oxysat, float airsat, int timesrun)
 {
   startThingSpeakCmd();
   String getStr = "GET /update?api_key=";
@@ -156,6 +158,8 @@ void writeThingSpeak(float oxysat, float airsat)
   getStr += String(oxysat);
   getStr +="&field5=";
   getStr += String(airsat);
+  getStr +="&field6=";
+  getStr += String(timesrun);
   getStr += "\r\n\r\n";
   GetThingspeakcmd(getStr); 
 }
