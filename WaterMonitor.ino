@@ -88,7 +88,7 @@ unsigned long updateTime = 0;
 
 void loop() {
   //rtc.update();
-  if(timesrun >= 5){reboot();}
+  if(timesrun >= 120000){reboot();}
   timesrun++;
   sensorHub.update();
   char phab[6],tempa[6],oxygen[6];
